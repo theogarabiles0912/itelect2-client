@@ -1,0 +1,34 @@
+.task-manager {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.task-form {
+  display: flex;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.task-form input {
+  flex: 1;
+  padding: 10px;
+}
+
+.task-form button {
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.task-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #cccccc;
+}
