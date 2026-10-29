@@ -4,20 +4,33 @@
   text-align: left;
 }
 
+.login-form,
 .task-form {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 20px 0;
 }
 
+.login-form input,
 .task-form input {
   flex: 1;
+  min-width: 160px;
   padding: 10px;
 }
 
-.task-form button {
+.login-form button,
+.task-form button,
+.who button {
   padding: 10px 16px;
   cursor: pointer;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .task-list {
@@ -31,4 +44,10 @@
   gap: 16px;
   padding: 12px 0;
   border-bottom: 1px solid #cccccc;
+}
+
+.error {
+  width: 100%;
+  margin: 0;
+  color: #b42318;
 }

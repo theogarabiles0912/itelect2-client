@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Session 14: your own copy of the settings
+.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

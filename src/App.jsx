@@ -1,46 +1,111 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import LoginForm from "./components/LoginForm.jsx";
 import TaskForm from "./components/TaskForm.jsx";
 import TaskList from "./components/TaskList.jsx";
 import "./App.css";
 
-const STARTING_TASKS = [
-  {
-    id: 1,
-    title: "Finish the Task Manager API",
-    dueDate: "2026-10-20",
-  },
-  {
-    id: 2,
-    title: "Create the React client",
-    dueDate: "2026-10-21",
-  },
-  {
-    id: 3,
-    title: "Review Session 13",
-    dueDate: "2026-10-22",
-  },
-];
+const API_URL = import.meta.env.VITE_API_URL;
+
+async function fetchTasks() {
+  if (!API_URL) {
+    throw new Error("VITE_API_URL is not set.");
+  }
+
+  const res = await fetch(`${API_URL}/api/tasks`);
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || `GET /api/tasks answered ${res.status}`);
+  }
+
+  return data;
+}
 
 function App() {
-  const [tasks, setTasks] = useState(STARTING_TASKS);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [token, setToken] = useState("");
+  const [loggedInAs, setLoggedInAs] = useState("");
 
-  function addTask(title) {
-    const newTask = {
-      id: Date.now(),
-      title,
-      dueDate: "No due date",
-    };
+  useEffect(() => {
+    async function loadTasks() {
+      try {
+        setTasks(await fetchTasks());
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    setTasks([...tasks, newTask]);
+    loadTasks();
+  }, []);
+
+  async function logIn(email, password) {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Could not log in.");
+    }
+
+    setToken(data.token);
+    setLoggedInAs(email);
+  }
+
+  function logOut() {
+    setToken("");
+    setLoggedInAs("");
+  }
+
+  async function addTask(task) {
+    const res = await fetch(`${API_URL}/api/tasks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ ...task, completed: false }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Could not add the task.");
+    }
+
+    setTasks(await fetchTasks());
   }
 
   return (
     <main className="task-manager">
       <h1>Task Manager</h1>
-      <p>{tasks.length} tasks</p>
 
-      <TaskForm onAdd={addTask} />
-      <TaskList tasks={tasks} />
+      {token ? (
+        <p className="who">
+          Logged in as {loggedInAs}
+          <button type="button" onClick={logOut}>
+            Log out
+          </button>
+        </p>
+      ) : (
+        <LoginForm onLogin={logIn} />
+      )}
+
+      {token && <TaskForm onAdd={addTask} />}
+      {loading && <p>Loading tasks...</p>}
+      {error && <p className="error">{error}</p>}
+
+      {!loading && !error && (
+        <>
+          <p>{tasks.length} tasks</p>
+          <TaskList tasks={tasks} />
+        </>
+      )}
     </main>
   );
 }
